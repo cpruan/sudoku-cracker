@@ -1,7 +1,12 @@
 # enjoyself.sudoku
-Use python to do Sudoku (simple version)
+Python to solve a Sudoku (medium version)
 
 # 2018/01/17
 版本V2，可破解中等难度数独（耗时约50~200ms），但对于超难数独不能短时破解，算法有待改善。
 此外缺乏图形界面，输入有点麻烦（目前支持input手动输入数独的每一行，一共9行；或者直接修改程序中的default_data）。
 以后可能会改成图形界面的...
+
+# 2018/06/07
+版本v3,简单学习了tkinter库，做了个丑不拉几的GUI，不过重在实用吧。
+注意哦，我还没有加入错误判断语句，以及对于超难的数独解题速度极慢，总之碰到这两种情况很可能会卡死、无响应，默默关掉重来就好...
+
