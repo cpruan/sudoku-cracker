@@ -1,5 +1,24 @@
 import tkinter as tk
 
+def isValidSudoku(board):   #判断Sudoku数据是否有效
+    for y in range(9):
+        for x in range(9):
+            if board[y][x] != 0:
+                if board[y].count(board[y][x]) > 1:
+                    return False
+
+            for col in range(9):
+                if board[y][x] != 0 and col != y:
+                    if board[col][x] == board[y][x]:
+                        return False
+
+            for i in range(3):
+                for j in range(3):
+                    if board[y][x] != 0 and (i+3*(y//3), j+3*(x//3)) != (y, x):
+                        if board[i+3*(y//3)][j+3*(x//3)] == board[y][x]:
+                            return False
+    return True
+
 def get_sudoku():
     window = tk.Tk()
     window.title('Solve a Sudoku')
@@ -30,23 +49,26 @@ def get_sudoku():
 
     for e in entrys:
         e.place(x=str(entrys.index(e)%9*28+entrys.index(e)//3%3*6+20),
-                y=str(entrys.index(e)//9*24+entrys.index(e)//27*6+70))   #用来将数独矩阵分割成9个九宫格
+                y=str(entrys.index(e)//9*24+entrys.index(e)//27*6+70))   #GUI中用来将数独矩阵分割成9个九宫格
 
     def get_data(): #获取数独矩阵的值
         for e in entrys:
             sudoku[entrys.index(e)//9][entrys.index(e)%9] = int(e.get()) if e.get() != '' else 0
-        data = sudoku   #将输入的数独代入算法中计算
-        data_list = data_list_filter(data, build_data_list(data), 0)
-        newdata = fill_num(data, data_list, 0)   #计算得到完整数独newdata
-        print_sudoku(newdata)   #程序输出数独newdata
-        for l in labels:
-            labels[labels.index(l)]['text']= newdata[labels.index(l)//9][labels.index(l)%9]   #将完整数独的值代入label中
-            l.place(x=str(labels.index(l)%9*28+labels.index(l)//3%3*6+300),
-                    y=str(labels.index(l)//9*24+labels.index(l)//27*6+70))   #用labels将数独输出到GUI界面
+        if isValidSudoku(sudoku):   #判断输入的Sudoku是否有效
+            data = sudoku   #将输入的数独代入算法中计算
+            data_list = data_list_filter(data, build_data_list(data), 0)   #针对Sudoku中的每一个空格子，都算出其可能的备选数字，存入data_list中；每当空格被确认唯一值时，剩余data_list都需要再被刷新
+            newdata = fill_num(data, data_list, 0)   #计算得到完整数独newdata
+            print_sudoku(newdata)   #程序输出数独newdata
+            for l in labels:
+                labels[labels.index(l)]['text']= newdata[labels.index(l)//9][labels.index(l)%9]   #将完整数独的值代入label中
+                l.place(x=str(labels.index(l)%9*28+labels.index(l)//3%3*6+300),
+                        y=str(labels.index(l)//9*24+labels.index(l)//27*6+70))   #用labels将数独输出到GUI界面
+        else:
+            pass
 
     window.mainloop()
 
-def get_data():  #初始化，输入数独数据data
+def get_data():  #初始化，用来手动输入数独数据data
     data = []
     for n in range(9):
         data.append(list(map(int, input('Enter {}th line:'.format(n+1)).split())))
@@ -59,8 +81,9 @@ def print_sudoku(data): #打印最终数独破解结果
         for j in range(9):
             print('{:^3}'.format(data[i][j]),end='')
         print('')
+    print('')
 
-def build_data_list(data): #初始化，未每个空位建立备选数字列表
+def build_data_list(data): #初始化，未每个空位建立备选数字列表data_list
     data_list = []
     for y in range(9):
         for x in range(9):
@@ -85,7 +108,7 @@ def judge(data, x, y, num): #关键函数一，判断数字是否重复，是否
                 return False
     return True
 
-def data_list_filter(data, data_list, start):
+def data_list_filter(data, data_list, start):    #用来再次刷新备选数字
     for blank_index in range(start, len(data_list)):
         data_list[blank_index][1] = []
         for num in range(1,10):
@@ -93,7 +116,7 @@ def data_list_filter(data, data_list, start):
                 data_list[blank_index][1].append(num)
     return data_list
 
-def fill_num(data, data_list, start):  #关键函数二，对有多个备选数字的位置循环猜数字。类似深度优先遍历算法，一旦某位置的数字judge为True，则允许开始下一位置的猜测；若某位置为False，则忽略。
+def fill_num(data, data_list, start):  #关键函数二，对具有多个备选数字的位置依次尝试。类似深度优先遍历算法，一旦某位置的数字judge为True，则允许开始下一位置的猜测；若某位置为False，则忽略。
     if start < len(data_list):
         one = data_list[start]
         for num in one[1]:
